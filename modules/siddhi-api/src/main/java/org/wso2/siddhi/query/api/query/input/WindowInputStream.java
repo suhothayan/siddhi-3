@@ -1,34 +1,33 @@
 /*
-*  Copyright (c) 2005-2012, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-*
-*  WSO2 Inc. licenses this file to you under the Apache License,
-*  Version 2.0 (the "License"); you may not use this file except
-*  in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an
-* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-* KIND, either express or implied.  See the License for the
-* specific language governing permissions and limitations
-* under the License.
-*/
+ * Copyright (c) 2005 - 2014, WSO2 Inc. (http://www.wso2.org) All Rights
+ * Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.siddhi.query.api.query.input;
 
 import org.wso2.siddhi.query.api.condition.Condition;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.expression.Expression;
 import org.wso2.siddhi.query.api.query.input.handler.Filter;
+import org.wso2.siddhi.query.api.query.input.handler.StreamFunction;
 import org.wso2.siddhi.query.api.query.input.handler.StreamHandler;
-import org.wso2.siddhi.query.api.query.input.handler.Transformer;
 import org.wso2.siddhi.query.api.query.input.handler.Window;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WindowStream implements SingleStream {
+public class WindowInputStream implements SingleInputStream {
 
     protected String streamId;
     protected AbstractDefinition definition;
@@ -38,16 +37,16 @@ public class WindowStream implements SingleStream {
 
     protected int windowPosition = -1;
 
-    protected WindowStream(String streamId) {
+    protected WindowInputStream(String streamId) {
         this(streamId, streamId);
     }
 
-    public WindowStream(String streamId, String streamReferenceId) {
+    public WindowInputStream(String streamId, String streamReferenceId) {
         this.streamId = streamId;
         this.streamReferenceId = streamReferenceId;
     }
 
-    public WindowStream(StandardStream standardStream, Window window) {
+    public WindowInputStream(StandardInputStream standardStream, Window window) {
         streamId = standardStream.getStreamId();
         definition = standardStream.getDefinition();
         streamReferenceId = standardStream.getStreamReferenceId();
@@ -79,7 +78,7 @@ public class WindowStream implements SingleStream {
         return streamIds;
     }
 
-    public WindowStream as(String streamReferenceId) {
+    public WindowInputStream as(String streamReferenceId) {
         this.streamReferenceId = streamReferenceId;
         return this;
     }
@@ -92,29 +91,29 @@ public class WindowStream implements SingleStream {
         this.streamHandlers = streamHandlers;
     }
 
-    public WindowStream filter(Condition filterCondition) {
+    public WindowInputStream filter(Condition filterCondition) {
         streamHandlers.add(new Filter(filterCondition));
         return this;
     }
 
-    public WindowStream filter(Filter filter) {
+    public WindowInputStream filter(Filter filter) {
         streamHandlers.add(filter);
         return this;
     }
 
-    public WindowStream function(String name, Expression... parameters) {
-        streamHandlers.add(new Transformer(name, parameters));
+    public WindowInputStream function(String name, Expression... parameters) {
+        streamHandlers.add(new StreamFunction(name, parameters));
         return this;
     }
 
-    public WindowStream function(String extensionName, String functionName,
+    public WindowInputStream function(String extensionName, String functionName,
                                  Expression... parameters) {
-        streamHandlers.add(new Transformer(extensionName, functionName, parameters));
+        streamHandlers.add(new StreamFunction(extensionName, functionName, parameters));
         return this;
     }
 
-    public WindowStream function(Transformer transformer) {
-        streamHandlers.add(transformer);
+    public WindowInputStream function(StreamFunction streamFunction) {
+        streamHandlers.add(streamFunction);
         return this;
     }
 }

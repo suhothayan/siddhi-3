@@ -16,7 +16,7 @@ definitionStreamFinal
     ;
 
 definitionStream
-    :'define' 'stream' source (definition|likeSource|fromSource)
+    :'define' 'inputStream' source (definition|likeSource|fromSource)
     ;
 
 definitionPoolFinal

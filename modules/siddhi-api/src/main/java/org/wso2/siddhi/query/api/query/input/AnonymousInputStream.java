@@ -14,25 +14,21 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.siddhi.query.api.query.input.sequence.element;
+package org.wso2.siddhi.query.api.query.input;
 
-import org.wso2.siddhi.query.api.query.input.StandardInputStream;
+import org.wso2.siddhi.query.api.query.Query;
 
-public class OrElement implements SequenceElement {
-    StandardInputStream standardStream1;
-    StandardInputStream standardStream2;
+import java.util.UUID;
 
-    public OrElement(StandardInputStream standardStream1,
-                     StandardInputStream standardStream2) {
-        this.standardStream1 = standardStream1;
-        this.standardStream2 = standardStream2;
+public class AnonymousInputStream extends StandardInputStream {
+    private Query query;
+
+    public AnonymousInputStream(Query query) {
+        super("Anonymous-" + UUID.randomUUID());
+        this.query = query;
     }
 
-    public StandardInputStream getStandardStream1() {
-        return standardStream1;
-    }
-
-    public StandardInputStream getStandardStream2() {
-        return standardStream2;
+    public Query getQuery() {
+        return query;
     }
 }

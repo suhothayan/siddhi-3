@@ -14,18 +14,20 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.siddhi.query.api.expression;
+package org.wso2.siddhi.query.api.query.input;
 
-import java.util.Set;
+import org.wso2.siddhi.query.api.query.input.handler.StreamHandler;
 
-public class ExpressionValidator {
+import java.util.List;
 
-//    public static void validate(Expression expression, List<QueryEventSource> queryEventSources,
-//                                String streamReferenceId, boolean processInStreamDefinition) {
-//        expression.validate(queryEventSources, streamReferenceId, processInStreamDefinition);
-//    }
+public interface SingleInputStream extends InputStream {
 
-    public static java.util.Map<String, Set<String>> getDependency(Expression expression) {
-        return expression.getDependency();
-    }
+    public String getStreamId();
+
+    public String getStreamReferenceId();
+
+    public WindowInputStream as(String streamReferenceId);
+
+    public List<StreamHandler> getStreamHandlers();
+
 }

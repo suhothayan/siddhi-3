@@ -1,28 +1,25 @@
 /*
-*  Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-*
-*  WSO2 Inc. licenses this file to you under the Apache License,
-*  Version 2.0 (the "License"); you may not use this file except
-*  in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an
-* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-* KIND, either express or implied.  See the License for the
-* specific language governing permissions and limitations
-* under the License.
-*/
+ * Copyright (c) 2005 - 2014, WSO2 Inc. (http://www.wso2.org) All Rights
+ * Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.siddhi.query.api.expression;
 
-import org.wso2.siddhi.query.api.definition.AbstractDefinition;
-import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.exception.MalformedAttributeException;
-import org.wso2.siddhi.query.api.query.QueryEventSource;
-
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class Variable extends Expression {
 
@@ -57,66 +54,66 @@ public class Variable extends Expression {
         return position;
     }
 
-    @Override
-    protected void validate(List<QueryEventSource> queryEventSourceList, String streamReferenceId,
-                            boolean processInStreamDefinition) {
-        if (streamId == null) {
-            streamId = streamReferenceId;
-        }
-        if (streamId == null) {
-            int occurrences = 0;
-            String inputStreamName = "";
-            for (QueryEventSource queryEvent : queryEventSourceList) {
-                AbstractDefinition definition;
-                if (processInStreamDefinition) {
-                    definition = queryEvent.getInDefinition();
-                } else {
-                    definition = queryEvent.getOutDefinition();
-                }
-                for (Attribute attribute : definition.getAttributeList()) {
-                    if (this.getAttributeName().equals(attribute.getName())) {
-                        occurrences++;
-                        inputStreamName = queryEvent.getSourceId();
-                        break;
-                    }
-                }
-            }
-            if (occurrences == 1) {
-                streamId = inputStreamName;
-            } else if (occurrences > 1) {
-                throw new MalformedAttributeException("Attribute \"" + getAttributeName() + "\" exists in more than one inputstream.Specify the input stream");
-            } else if (occurrences == 0) {
-                if (null != queryEventSourceList && queryEventSourceList.size() == 1) {
-                    throw new MalformedAttributeException("Attribute \"" + getAttributeName() + "\" does not exist in " + queryEventSourceList.get(0).getSourceId());
-                } else {
-                    throw new MalformedAttributeException("Attribute \"" + getAttributeName() + "\" does not exist");
-                }
-            }
-
-        }
-
-        boolean isValid = false;
-        for (QueryEventSource queryEvent : queryEventSourceList) {
-            if (queryEvent.getSourceId().equals(streamId) || queryEvent.getReferenceSourceId().equals(streamId)) {
-                AbstractDefinition definition;
-                if (processInStreamDefinition) {
-                    definition = queryEvent.getInDefinition();
-                } else {
-                    definition = queryEvent.getOutDefinition();
-                }
-                for (Attribute attribute : definition.getAttributeList()) {
-                    if (this.getAttributeName().equals(attribute.getName())) {
-                        isValid = true;
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-        if (!isValid) {
-            throw new MalformedAttributeException("Attribute \"" + getAttributeName() + "\" does not exist in " + streamId);
-        }
-    }
+//    @Override
+//    protected void validate(List<QueryEventSource> queryEventSourceList, String streamReferenceId,
+//                            boolean processInStreamDefinition) {
+//        if (streamId == null) {
+//            streamId = streamReferenceId;
+//        }
+//        if (streamId == null) {
+//            int occurrences = 0;
+//            String inputStreamName = "";
+//            for (QueryEventSource queryEvent : queryEventSourceList) {
+//                AbstractDefinition definition;
+//                if (processInStreamDefinition) {
+//                    definition = queryEvent.getInDefinition();
+//                } else {
+//                    definition = queryEvent.getOutDefinition();
+//                }
+//                for (Attribute attribute : definition.getAttributeList()) {
+//                    if (this.getAttributeName().equals(attribute.getName())) {
+//                        occurrences++;
+//                        inputStreamName = queryEvent.getSourceId();
+//                        break;
+//                    }
+//                }
+//            }
+//            if (occurrences == 1) {
+//                streamId = inputStreamName;
+//            } else if (occurrences > 1) {
+//                throw new MalformedAttributeException("Attribute \"" + getAttributeName() + "\" exists in more than one inputstream.Specify the input stream");
+//            } else if (occurrences == 0) {
+//                if (null != queryEventSourceList && queryEventSourceList.size() == 1) {
+//                    throw new MalformedAttributeException("Attribute \"" + getAttributeName() + "\" does not exist in " + queryEventSourceList.get(0).getSourceId());
+//                } else {
+//                    throw new MalformedAttributeException("Attribute \"" + getAttributeName() + "\" does not exist");
+//                }
+//            }
+//
+//        }
+//
+//        boolean isValid = false;
+//        for (QueryEventSource queryEvent : queryEventSourceList) {
+//            if (queryEvent.getSourceId().equals(streamId) || queryEvent.getReferenceSourceId().equals(streamId)) {
+//                AbstractDefinition definition;
+//                if (processInStreamDefinition) {
+//                    definition = queryEvent.getInDefinition();
+//                } else {
+//                    definition = queryEvent.getOutDefinition();
+//                }
+//                for (Attribute attribute : definition.getAttributeList()) {
+//                    if (this.getAttributeName().equals(attribute.getName())) {
+//                        isValid = true;
+//                        break;
+//                    }
+//                }
+//                break;
+//            }
+//        }
+//        if (!isValid) {
+//            throw new MalformedAttributeException("Attribute \"" + getAttributeName() + "\" does not exist in " + streamId);
+//        }
+//    }
 
     @Override
     public String toString() {

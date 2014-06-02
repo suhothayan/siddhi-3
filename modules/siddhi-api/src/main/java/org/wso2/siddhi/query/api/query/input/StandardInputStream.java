@@ -1,41 +1,42 @@
 /*
-*  Copyright (c) 2005-2012, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-*
-*  WSO2 Inc. licenses this file to you under the Apache License,
-*  Version 2.0 (the "License"); you may not use this file except
-*  in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an
-* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-* KIND, either express or implied.  See the License for the
-* specific language governing permissions and limitations
-* under the License.
-*/
+ * Copyright (c) 2005 - 2014, WSO2 Inc. (http://www.wso2.org) All Rights
+ * Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.siddhi.query.api.query.input;
 
 import org.wso2.siddhi.query.api.condition.Condition;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.expression.Expression;
 import org.wso2.siddhi.query.api.query.input.handler.Filter;
+import org.wso2.siddhi.query.api.query.input.handler.StreamFunction;
 import org.wso2.siddhi.query.api.query.input.handler.StreamHandler;
-import org.wso2.siddhi.query.api.query.input.handler.Transformer;
 import org.wso2.siddhi.query.api.query.input.handler.Window;
+import org.wso2.siddhi.query.api.query.input.pattern.element.PatternElement;
+import org.wso2.siddhi.query.api.query.input.sequence.element.SequenceElement;
 
 import java.util.List;
 
-public class StandardStream extends WindowStream {
+public class StandardInputStream extends WindowInputStream implements PatternElement,SequenceElement {
 
-    protected boolean isCounterStream = false;
+//    protected boolean isCounterStream = false;
 
-    protected StandardStream(String streamId) {
+    protected StandardInputStream(String streamId) {
         this(streamId, streamId);
     }
 
-    public StandardStream(String streamId, String streamReferenceId) {
+    public StandardInputStream(String streamId, String streamReferenceId) {
         super(streamId, streamReferenceId);
         this.streamId = streamId;
         this.streamReferenceId = streamReferenceId;
@@ -57,7 +58,7 @@ public class StandardStream extends WindowStream {
         return streamReferenceId;
     }
 
-    public WindowStream as(String streamReferenceId) {
+    public WindowInputStream as(String streamReferenceId) {
         this.streamReferenceId = streamReferenceId;
         return this;
     }
@@ -77,9 +78,9 @@ public class StandardStream extends WindowStream {
 //        if (definition == null) {
 //            throw new SourceNotExistException("Definition not exist! No stream/table defined with stream ID: " + streamId);
 //        }
-//        if (definition instanceof TableDefinition) {
+//        if (definition instanceof tableDefinition) {
 //            if (filter != null || transformer != null) {
-//                throw new SourceNotExistException(streamId + " is not a Stream but a Table, and it cant have filter or transformer");
+//                throw new SourceNotExistException(streamId + " is not a InputStream but a Table, and it cant have filter or transformer");
 //            }
 //
 //        }
@@ -105,49 +106,49 @@ public class StandardStream extends WindowStream {
 //        return queryEventSource;
 //    }
 
-    public StandardStream filter(Condition filterCondition) {
+    public StandardInputStream filter(Condition filterCondition) {
         streamHandlers.add(new Filter(filterCondition));
         return this;
     }
 
-    public StandardStream filter(Filter filter) {
+    public StandardInputStream filter(Filter filter) {
         streamHandlers.add(filter);
         return this;
     }
 
-    public WindowStream window(String name, Expression... parameters) {
-        return new WindowStream(this, new Window(name, parameters));
+    public WindowInputStream window(String name, Expression... parameters) {
+        return new WindowInputStream(this, new Window(name, parameters));
     }
 
-    public WindowStream window(String namespace, String function, Expression... parameters) {
-        return new WindowStream(this, new Window(namespace, function, parameters));
+    public WindowInputStream window(String namespace, String function, Expression... parameters) {
+        return new WindowInputStream(this, new Window(namespace, function, parameters));
     }
 
-    public WindowStream window(Window window) {
-        return new WindowStream(this, window);
+    public WindowInputStream window(Window window) {
+        return new WindowInputStream(this, window);
     }
 
-    public StandardStream function(String name, Expression... parameters) {
-        streamHandlers.add(new Transformer(name, parameters));
+    public StandardInputStream function(String name, Expression... parameters) {
+        streamHandlers.add(new StreamFunction(name, parameters));
         return this;
     }
 
-    public StandardStream function(String extensionName, String functionName,
+    public StandardInputStream function(String extensionName, String functionName,
                                  Expression... parameters) {
-        streamHandlers.add(new Transformer(extensionName, functionName, parameters));
+        streamHandlers.add(new StreamFunction(extensionName, functionName, parameters));
         return this;
     }
 
-    public StandardStream function(Transformer transformer) {
-        streamHandlers.add(transformer);
+    public StandardInputStream function(StreamFunction streamFunction) {
+        streamHandlers.add(streamFunction);
         return this;
     }
 
-    public void setCounterStream(boolean counterStream) {
-        isCounterStream = counterStream;
-    }
+//    public void setCounterStream(boolean counterStream) {
+//        isCounterStream = counterStream;
+//    }
 
-    public boolean isCounterStream() {
-        return isCounterStream;
-    }
+//    public boolean isCounterStream() {
+//        return isCounterStream;
+//    }
 }

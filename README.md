@@ -14,7 +14,7 @@ and now being improved by WSO2 Inc.
 Features Supported
 ------------------
  - Filter
-    - Uses stream handlers to filter events
+    - Uses inputStream handlers to filter events
  - Join
     - Supports only upto two streams at a time
     - Match operation triggering can be configured (making "left" or "right" or both streams to trigger)
@@ -27,7 +27,7 @@ Features Supported
  - Having
     - Supported for all type if queries
  - Stream handlers
-    - Supports multiple handlers in a row per stream
+    - Supports multiple handlers in a row per inputStream
     - By default shipped with  Filter and Window
     - Default implementations to windows are: Time window, Time Batch window, Length window
     - Supports Custom Stream handlers via the plugable architecture
@@ -39,12 +39,12 @@ Features Supported
  - Pattern processing
     - Identifies pattern occurrences within streams
     - Supports "every" conditions
-    - Can process two stream at a time via "and" and "or" conditions (currently only works on two simple streams)
-    - Can collect events, with min and max limit, using "collect" condition (currently only works on a simple stream)
+    - Can process two inputStream at a time via "and" and "or" conditions (currently only works on two simple streams)
+    - Can collect events, with min and max limit, using "collect" condition (currently only works on a simple inputStream)
  - Sequence processing
     - Identifies continuous sequences with in streams
     - Supports "or" conditions on streams (currently only works on two simple streams)
-    - Supports zero to many, one to many, and zero to one  (currently only works on a simple stream)
+    - Supports zero to many, one to many, and zero to one  (currently only works on a simple inputStream)
  - Event Tables
     - Support for using historical data in realtime processing
     - Can process with the in-memory or MYSQL based data collection
