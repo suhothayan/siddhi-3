@@ -38,6 +38,15 @@ public class PassThroughQueryTestCase {
     }
 
     @Test
+    public void testQueryWithName() {
+        Query query = QueryFactory.query();
+        query.name("TestQuery").summery("Query for Test");
+        query.from(QueryFactory.inputStream("StockStream"));
+        query.insertInto("OutStockStream");
+    }
+
+
+    @Test
     public void testQuery2() {
         Query query = QueryFactory.query();
         query.from(QueryFactory.inputStream("StockStream"));
@@ -97,5 +106,6 @@ public class PassThroughQueryTestCase {
         );
         query.insertInto("OutStockStream");
     }
+
 
 }

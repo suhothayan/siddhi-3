@@ -24,20 +24,32 @@ import org.wso2.siddhi.query.api.query.input.SingleInputStream;
 import org.wso2.siddhi.query.api.query.output.OutputRate;
 import org.wso2.siddhi.query.api.query.output.stream.DeleteStream;
 import org.wso2.siddhi.query.api.query.output.stream.InsertIntoStream;
-import org.wso2.siddhi.query.api.query.output.stream.OutStream;
+import org.wso2.siddhi.query.api.query.output.stream.OutputStream;
 import org.wso2.siddhi.query.api.query.output.stream.UpdateStream;
 import org.wso2.siddhi.query.api.query.selection.Selector;
 
 public class Query implements ExecutionPlan {
 
-    private InputStream inputInputStream;
+    private String name;
+    private String summery;
+    private InputStream inputStream;
     private Selector selector = new Selector();
-    private OutStream outStream;
+    private OutputStream outputStream;
     private String partitionId;
     private OutputRate outputRate;
 
+    public Query name(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public Query summery(String summery) {
+        this.summery = summery;
+        return this;
+    }
+
     public Query from(InputStream inputStream) {
-        this.inputInputStream = inputStream;
+        this.inputStream = inputStream;
         return this;
     }
 
@@ -46,24 +58,24 @@ public class Query implements ExecutionPlan {
         return this;
     }
 
-    public Query outStream(OutStream outStream) {
-        this.outStream = outStream;
+    public Query outStream(OutputStream outputStream) {
+        this.outputStream = outputStream;
         return this;
     }
 
-    public Query insertInto(String outputStreamId, OutStream.OutputEventsFor outputEventsFor) {
-        this.outStream = new InsertIntoStream(outputStreamId, outputEventsFor);
+    public Query insertInto(String outputStreamId, OutputStream.OutputEventsFor outputEventsFor) {
+        this.outputStream = new InsertIntoStream(outputStreamId, outputEventsFor);
         return this;
     }
 
 
     public Query insertInto(String outputStreamId) {
-        this.outStream = new InsertIntoStream(outputStreamId);
+        this.outputStream = new InsertIntoStream(outputStreamId);
         return this;
     }
-    
+
     public void partitionBy(String partitionId) {
-    	this.partitionId = partitionId;
+        this.partitionId = partitionId;
     }
 
     public SingleInputStream returnStream() {
@@ -71,42 +83,51 @@ public class Query implements ExecutionPlan {
     }
 
     public void deleteBy(String outputTableId, Condition deletingCondition) {
-        this.outStream = new DeleteStream(outputTableId, deletingCondition);
+        this.outputStream = new DeleteStream(outputTableId, deletingCondition);
     }
 
-    public void deleteBy(String outputTableId, OutStream.OutputEventsFor outputEventsFor, Condition deletingCondition) {
-        this.outStream = new DeleteStream(outputTableId, outputEventsFor, deletingCondition);
+    public void deleteBy(String outputTableId, OutputStream.OutputEventsFor outputEventsFor, Condition deletingCondition) {
+        this.outputStream = new DeleteStream(outputTableId, outputEventsFor, deletingCondition);
     }
 
     public void updateBy(String outputTableId, Condition deletingCondition) {
-        this.outStream = new UpdateStream(outputTableId, deletingCondition);
+        this.outputStream = new UpdateStream(outputTableId, deletingCondition);
     }
 
-    public void updateBy(String outputTableId, OutStream.OutputEventsFor outputEventsFor, Condition updatingCondition) {
-        this.outStream = new UpdateStream(outputTableId, outputEventsFor, updatingCondition);
+    public void updateBy(String outputTableId, OutputStream.OutputEventsFor outputEventsFor, Condition updatingCondition) {
+        this.outputStream = new UpdateStream(outputTableId, outputEventsFor, updatingCondition);
     }
 
     public void output(OutputRate outputRate) {
         this.outputRate = outputRate;
     }
 
-    public InputStream getInputInputStream() {
-        return inputInputStream;
+    public InputStream getInputStream() {
+        return inputStream;
     }
 
-    public OutStream getOutputStream() {
-        return outStream;
+    public OutputStream getOutputStream() {
+        return outputStream;
     }
 
     public Selector getSelector() {
         return selector;
     }
 
-	public String getPartitionId() {
-		return partitionId;
-	}
+    public String getPartitionId() {
+        return partitionId;
+    }
 
     public OutputRate getOutputRate() {
         return outputRate;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getSummery() {
+        return summery;
+    }
+
 }

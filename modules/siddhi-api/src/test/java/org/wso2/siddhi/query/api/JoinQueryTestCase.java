@@ -22,7 +22,7 @@ import org.wso2.siddhi.query.api.condition.Condition;
 import org.wso2.siddhi.query.api.expression.Expression;
 import org.wso2.siddhi.query.api.query.Query;
 import org.wso2.siddhi.query.api.query.input.JoinInputStream;
-import org.wso2.siddhi.query.api.query.output.stream.OutStream;
+import org.wso2.siddhi.query.api.query.output.stream.OutputStream;
 
 public class JoinQueryTestCase {
 
@@ -64,7 +64,7 @@ public class JoinQueryTestCase {
                                         Expression.variable(null, "price"))
                         )
         );
-        query.insertInto("StockQuote", OutStream.OutputEventsFor.EXPIRED_EVENTS);
+        query.insertInto("StockQuote", OutputStream.OutputEventsFor.EXPIRED_EVENTS);
 
     }
 

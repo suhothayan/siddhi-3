@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.wso2.siddhi.query.api.condition.Condition;
 import org.wso2.siddhi.query.api.expression.Expression;
 import org.wso2.siddhi.query.api.query.Query;
-import org.wso2.siddhi.query.api.query.output.stream.OutStream;
+import org.wso2.siddhi.query.api.query.output.stream.OutputStream;
 
 public class TableQueryTestCase {
 
@@ -67,7 +67,7 @@ public class TableQueryTestCase {
                                 )
                         ).window("lengthBatch", Expression.value(50))
         );
-        query.deleteBy("StockQuote", OutStream.OutputEventsFor.ALL_EVENTS,
+        query.deleteBy("StockQuote", OutputStream.OutputEventsFor.ALL_EVENTS,
                 Condition.compare(
                         Expression.variable("symbol"),
                         Condition.Operator.EQUAL,
@@ -122,7 +122,7 @@ public class TableQueryTestCase {
                         select("symbol", Expression.variable("symbol")).
                         select("price", Expression.variable("price"))
         );
-        query.updateBy("StockQuote", OutStream.OutputEventsFor.ALL_EVENTS, Condition.compare(
+        query.updateBy("StockQuote", OutputStream.OutputEventsFor.ALL_EVENTS, Condition.compare(
                 Expression.variable("symbol"),
                 Condition.Operator.EQUAL,
                 Expression.variable("StockQuote", "symbol")));

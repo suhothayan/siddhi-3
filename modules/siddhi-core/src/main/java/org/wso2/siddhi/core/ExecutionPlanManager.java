@@ -1,25 +1,21 @@
 /*
-*  Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-*
-*  WSO2 Inc. licenses this file to you under the Apache License,
-*  Version 2.0 (the "License"); you may not use this file except
-*  in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an
-* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-* KIND, either express or implied.  See the License for the
-* specific language governing permissions and limitations
-* under the License.
-*/
+ * Copyright (c) 2005 - 2014, WSO2 Inc. (http://www.wso2.org) All Rights
+ * Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.siddhi.core;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
 import org.apache.log4j.Logger;
 import org.wso2.siddhi.core.config.SiddhiConfiguration;
 import org.wso2.siddhi.core.config.SiddhiContext;
@@ -27,10 +23,7 @@ import org.wso2.siddhi.core.exception.DifferentDefinitionAlreadyExistException;
 import org.wso2.siddhi.core.exception.OperationNotSupportedException;
 import org.wso2.siddhi.core.exception.QueryNotExistException;
 import org.wso2.siddhi.core.extension.EternalReferencedHolder;
-import org.wso2.siddhi.core.persistence.PersistenceService;
-import org.wso2.siddhi.core.snapshot.SnapshotService;
 import org.wso2.siddhi.core.persistence.PersistenceStore;
-import org.wso2.siddhi.core.snapshot.ThreadBarrier;
 import org.wso2.siddhi.core.query.QueryManager;
 import org.wso2.siddhi.core.query.output.callback.InsertIntoStreamCallback;
 import org.wso2.siddhi.core.query.output.callback.OutputCallback;
@@ -42,10 +35,7 @@ import org.wso2.siddhi.core.table.EventTable;
 import org.wso2.siddhi.core.table.InMemoryEventTable;
 import org.wso2.siddhi.core.table.RDBMSEventTable;
 import org.wso2.siddhi.core.tracer.EventMonitor;
-import org.wso2.siddhi.core.tracer.EventMonitorService;
 import org.wso2.siddhi.core.util.ExecutionPlanReference;
-import org.wso2.siddhi.core.util.SiddhiThreadFactory;
-import org.wso2.siddhi.core.util.generator.GlobalIndexGenerator;
 import org.wso2.siddhi.query.api.ExecutionPlan;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
@@ -57,78 +47,75 @@ import org.wso2.siddhi.query.compiler.exception.SiddhiParserException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
-public class SiddhiManager {
+public class ExecutionPlanManager {
 
-    static final Logger log = Logger.getLogger(SiddhiManager.class);
+    static final Logger log = Logger.getLogger(ExecutionPlanManager.class);
 
     private SiddhiContext siddhiContext;
     private ConcurrentMap<String, StreamJunction> streamJunctionMap = new ConcurrentHashMap<String, StreamJunction>(); //contains definition
-    private ConcurrentMap<String, AbstractDefinition> streamTableDefinitionMap = new ConcurrentHashMap<String, AbstractDefinition>(); //contains stream & table definition
-    private ConcurrentMap<String, QueryManager> queryProcessorMap = new ConcurrentHashMap<String, QueryManager>();
+    private ConcurrentMap<String, AbstractDefinition> streamAndTableDefinitionMap = new ConcurrentHashMap<String, AbstractDefinition>(); //contains stream & table definition
+    private ConcurrentMap<String, QueryManager> queryManagerMap = new ConcurrentHashMap<String, QueryManager>();
     private ConcurrentMap<String, InputHandler> inputHandlerMap = new ConcurrentHashMap<String, InputHandler>();
     private ConcurrentMap<String, EventTable> eventTableMap = new ConcurrentHashMap<String, EventTable>(); //contains event tables
     private ConcurrentMap<String, PartitionDefinition> partitionDefinitionMap = new ConcurrentHashMap<String, PartitionDefinition>();
+    private SiddhiManager siddhiManager;
 
 //    LinkedBlockingQueue<StateEvent> inputQueue = new LinkedBlockingQueue<StateEvent>();
 
-    public SiddhiManager() {
+    public ExecutionPlanManager() {
         this(new SiddhiConfiguration());
     }
 
-    public SiddhiManager(SiddhiConfiguration siddhiConfiguration) {
+    public ExecutionPlanManager(SiddhiManager siddhiManager) {
+        this.siddhiManager = siddhiManager;
 
-        if (siddhiConfiguration.isDistributedProcessing()) {
-            HazelcastInstance hazelcastInstance = Hazelcast.getHazelcastInstanceByName(siddhiConfiguration.getInstanceIdentifier());
-            if (hazelcastInstance == null) {
-                this.siddhiContext = new SiddhiContext(siddhiConfiguration.getQueryPlanIdentifier(), SiddhiContext.ProcessingState.ENABLE_INTERNAL);
-                Config hazelcastConf = new Config();
-                hazelcastConf.setProperty("hazelcast.logging.type", "log4j");
-                hazelcastConf.getGroupConfig().setName(siddhiConfiguration.getQueryPlanIdentifier());
-                hazelcastConf.setInstanceName(siddhiConfiguration.getInstanceIdentifier());
-                hazelcastInstance = Hazelcast.newHazelcastInstance(hazelcastConf);
-            } else {
-                this.siddhiContext = new SiddhiContext(siddhiConfiguration.getQueryPlanIdentifier(), SiddhiContext.ProcessingState.ENABLE_EXTERNAL);
-            }
-            siddhiContext.setHazelcastInstance(hazelcastInstance);
-            siddhiContext.setGlobalIndexGenerator(new GlobalIndexGenerator(siddhiContext));
-        } else {
-            this.siddhiContext = new SiddhiContext(siddhiConfiguration.getQueryPlanIdentifier(), SiddhiContext.ProcessingState.DISABLED);
-        }
-
-        this.siddhiContext.setEventBatchSize(siddhiConfiguration.getEventBatchSize());
-        this.siddhiContext.setAsyncProcessing(siddhiConfiguration.isAsyncProcessing());
-        this.siddhiContext.setSiddhiExtensions(siddhiConfiguration.getSiddhiExtensions());
-        this.siddhiContext.setThreadBarrier(new ThreadBarrier());
-        this.siddhiContext.setThreadPoolExecutor(new ThreadPoolExecutor(siddhiConfiguration.getThreadExecutorCorePoolSize(),
-                siddhiConfiguration.getThreadExecutorMaxPoolSize(),
-                50,
-                TimeUnit.MICROSECONDS,
-                new LinkedBlockingQueue<Runnable>(),
-                new SiddhiThreadFactory("Executor")));
-        this.siddhiContext.setScheduledExecutorService(Executors.newScheduledThreadPool(siddhiConfiguration.getThreadSchedulerCorePoolSize(), new SiddhiThreadFactory("Scheduler")));
-        this.siddhiContext.setSnapshotService(new SnapshotService(siddhiContext));
-        this.siddhiContext.setPersistenceService(new PersistenceService(siddhiContext));
-        this.siddhiContext.setEventMonitorService(new EventMonitorService(siddhiContext));
-
+//        if (siddhiConfiguration.isDistributedProcessing()) {
+//            HazelcastInstance hazelcastInstance = Hazelcast.getHazelcastInstanceByName(siddhiConfiguration.getInstanceIdentifier());
+//            if (hazelcastInstance == null) {
+//                this.siddhiContext = new SiddhiContext(siddhiConfiguration.getQueryPlanIdentifier(), SiddhiContext.ProcessingState.ENABLE_INTERNAL);
+//                Config hazelcastConf = new Config();
+//                hazelcastConf.setProperty("hazelcast.logging.type", "log4j");
+//                hazelcastConf.getGroupConfig().setName(siddhiConfiguration.getQueryPlanIdentifier());
+//                hazelcastConf.setInstanceName(siddhiConfiguration.getInstanceIdentifier());
+//                hazelcastInstance = Hazelcast.newHazelcastInstance(hazelcastConf);
+//            } else {
+//                this.siddhiContext = new SiddhiContext(siddhiConfiguration.getQueryPlanIdentifier(), SiddhiContext.ProcessingState.ENABLE_EXTERNAL);
+//            }
+//            siddhiContext.setHazelcastInstance(hazelcastInstance);
+//            siddhiContext.setGlobalIndexGenerator(new GlobalIndexGenerator(siddhiContext));
+//        } else {
+//            this.siddhiContext = new SiddhiContext(siddhiConfiguration.getQueryPlanIdentifier(), SiddhiContext.ProcessingState.DISABLED);
+//        }
+//
+//        this.siddhiContext.setEventBatchSize(siddhiConfiguration.getEventBatchSize());
+//        this.siddhiContext.setAsyncProcessing(siddhiConfiguration.isAsyncProcessing());
+//        this.siddhiContext.setSiddhiExtensions(siddhiConfiguration.getSiddhiExtensions());
+//        this.siddhiContext.setThreadBarrier(new ThreadBarrier());
+//        this.siddhiContext.setThreadPoolExecutor(new ThreadPoolExecutor(siddhiConfiguration.getThreadExecutorCorePoolSize(),
+//                siddhiConfiguration.getThreadExecutorMaxPoolSize(),
+//                50,
+//                TimeUnit.MICROSECONDS,
+//                new LinkedBlockingQueue<Runnable>(),
+//                new SiddhiThreadFactory("Executor")));
+//        this.siddhiContext.setScheduledExecutorService(Executors.newScheduledThreadPool(siddhiConfiguration.getThreadSchedulerCorePoolSize(), new SiddhiThreadFactory("Scheduler")));
+//        this.siddhiContext.setSnapshotService(new SnapshotService(siddhiContext));
+//        this.siddhiContext.setPersistenceService(new PersistenceService(siddhiContext));
+//        this.siddhiContext.setEventMonitorService(new EventMonitorService(siddhiContext));
+//
 
     }
 
 
     public InputHandler defineStream(StreamDefinition streamDefinition) {
         if (!checkEventStreamExist(streamDefinition)) {
-            streamTableDefinitionMap.put(streamDefinition.getStreamId(), streamDefinition);
-            StreamJunction streamJunction = streamJunctionMap.get(streamDefinition.getStreamId());
-            if (streamJunction == null) {
-                streamJunction = new StreamJunction(streamDefinition.getStreamId(), siddhiContext.getEventMonitorService());
-                streamJunctionMap.put(streamDefinition.getStreamId(), streamJunction);
-            }
+            streamAndTableDefinitionMap.put(streamDefinition.getStreamId(), streamDefinition);
+//            StreamJunction streamJunction = streamJunctionMap.get(streamDefinition.getStreamId());
+//            if (streamJunction == null) {
+            StreamJunction streamJunction = new StreamJunction(streamDefinition.getStreamId(), siddhiContext.getEventMonitorService());
+            streamJunctionMap.put(streamDefinition.getStreamId(), streamJunction);
+//            }
             InputHandler inputHandler = new InputHandler(streamDefinition.getStreamId(), streamJunction, siddhiContext);
             inputHandlerMap.put(streamDefinition.getStreamId(), inputHandler);
             return inputHandler;
@@ -144,9 +131,10 @@ public class SiddhiManager {
     }
 
     public void removeStream(String streamId) {
-        AbstractDefinition abstractDefinition = streamTableDefinitionMap.get(streamId);
+        //todo check for correctness
+        AbstractDefinition abstractDefinition = streamAndTableDefinitionMap.get(streamId);
         if (abstractDefinition != null && abstractDefinition instanceof StreamDefinition) {
-            streamTableDefinitionMap.remove(streamId);
+            streamAndTableDefinitionMap.remove(streamId);
             streamJunctionMap.remove(streamId);
             inputHandlerMap.remove(streamId);
         }
@@ -159,7 +147,7 @@ public class SiddhiManager {
 //            }
 //        } catch (EventStreamWithDifferentDefinitionAlreadyExistException e) {
 //            StreamJunction streamJunction = streamJunctionMap.get(streamDefinition.getSourceId());
-//            streamTableDefinitionMap.replace(streamDefinition.getSourceId(), streamDefinition);
+//            streamAndTableDefinitionMap.replace(streamDefinition.getSourceId(), streamDefinition);
 //            streamJunction.setStreamDefinition(streamDefinition);
 //            return inputHandlerMap.get(streamDefinition.getSourceId());
 //        }
@@ -167,14 +155,14 @@ public class SiddhiManager {
 //    }
 //
 //    public void dropStream(String streamId) {
-//        StreamDefinition streamDefinition = streamTableDefinitionMap.remove(streamId);
+//        StreamDefinition streamDefinition = streamAndTableDefinitionMap.remove(streamId);
 //        if (streamDefinition != null) {
 //            streamJunctionMap.remove(streamId);
 //            InputHandler inputHandler = inputHandlerMap.remove(streamId);
 //            if (inputHandler != null) {
 //                inputHandler.setStreamJunction(null);
 //            }
-//            for (QueryManager analyser : queryProcessorMap.values()) {
+//            for (QueryManager analyser : queryManagerMap.values()) {
 //                if (analyser.getQuerySelector().getOutputStreamDefinition().getSourceId().equals(streamId)) {
 //                    analyser.getQuerySelector().setStreamJunction(null);
 //                }
@@ -183,7 +171,7 @@ public class SiddhiManager {
 //    }
 
     private boolean checkEventStreamExist(StreamDefinition newStreamDefinition) {
-        AbstractDefinition definition = streamTableDefinitionMap.get(newStreamDefinition.getStreamId());
+        AbstractDefinition definition = streamAndTableDefinitionMap.get(newStreamDefinition.getStreamId());
         if (definition != null) {
             if (definition instanceof TableDefinition) {
                 throw new DifferentDefinitionAlreadyExistException("Table " + newStreamDefinition.getStreamId() + " is already defined as " + definition + ", hence cannot define " + newStreamDefinition);
@@ -199,7 +187,7 @@ public class SiddhiManager {
 
     public void defineTable(TableDefinition tableDefinition) {
         if (!checkEventTableExist(tableDefinition)) {
-            streamTableDefinitionMap.put(tableDefinition.getTableId(), tableDefinition);
+            streamAndTableDefinitionMap.put(tableDefinition.getTableId(), tableDefinition);
             EventTable eventTable = eventTableMap.get(tableDefinition.getTableId());
             if (eventTable == null) {
                 if (tableDefinition.getExternalTable() == null) {
@@ -221,15 +209,15 @@ public class SiddhiManager {
     }
 
     public void removeTable(String tableId) {
-        AbstractDefinition abstractDefinition = streamTableDefinitionMap.get(tableId);
+        AbstractDefinition abstractDefinition = streamAndTableDefinitionMap.get(tableId);
         if (abstractDefinition != null && abstractDefinition instanceof TableDefinition) {
-            streamTableDefinitionMap.remove(tableId);
+            streamAndTableDefinitionMap.remove(tableId);
             eventTableMap.remove(tableId);
         }
     }
 
     private boolean checkEventTableExist(TableDefinition newTableDefinition) {
-        AbstractDefinition definition = streamTableDefinitionMap.get(newTableDefinition.getTableId());
+        AbstractDefinition definition = streamAndTableDefinitionMap.get(newTableDefinition.getTableId());
         if (definition != null) {
             if (definition instanceof StreamDefinition) {
                 throw new DifferentDefinitionAlreadyExistException("Stream " + newTableDefinition.getTableId() + " is already defined as " + definition);
@@ -242,34 +230,24 @@ public class SiddhiManager {
         return false;
     }
 
-    public void definePartition(PartitionDefinition partitionDefinition) {
-        if (!checkEventPartitionExist(partitionDefinition)) {
-            partitionDefinitionMap.put(partitionDefinition.getPartitionId(), partitionDefinition);
-        }
-    }
-
-    public void definePartition(String partitionDefinition) throws SiddhiParserException {
-        definePartition(SiddhiCompiler.parsePartitionDefinition(partitionDefinition));
-    }
-
-    public void removePartition(String partitionId) {
-        PartitionDefinition partitionDefinition = partitionDefinitionMap.get(partitionId);
-        if (partitionDefinition != null) {
-            partitionDefinitionMap.remove(partitionId);
-        }
-    }
-
-    private boolean checkEventPartitionExist(PartitionDefinition partitionDefinition) {
-        PartitionDefinition definition = partitionDefinitionMap.get(partitionDefinition.getPartitionId());
-        if (definition != null) {
-            if (!definition.getPartitionTypeList().equals(partitionDefinition.getPartitionTypeList())) {
-                throw new DifferentDefinitionAlreadyExistException("Partition " + partitionDefinition.getPartitionId() + " is already defined as " + definition);
-            } else {
-                return true;
-            }
-        }
-        return false;
-    }
+//    public void removePartition(String partitionId) {
+//        PartitionDefinition partitionDefinition = partitionDefinitionMap.get(partitionId);
+//        if (partitionDefinition != null) {
+//            partitionDefinitionMap.remove(partitionId);
+//        }
+//    }
+//
+//    private boolean checkEventPartitionExist(PartitionDefinition partitionDefinition) {
+//        PartitionDefinition definition = partitionDefinitionMap.get(partitionDefinition.getPartitionId());
+//        if (definition != null) {
+//            if (!definition.getPartitionTypeList().equals(partitionDefinition.getPartitionTypeList())) {
+//                throw new DifferentDefinitionAlreadyExistException("Partition " + partitionDefinition.getPartitionId() + " is already defined as " + definition);
+//            } else {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     public String addQuery(String query) throws SiddhiParserException {
         return addQuery(SiddhiCompiler.parseQuery(query));
@@ -286,12 +264,12 @@ public class SiddhiManager {
 //    }
 
     public String addQuery(Query query) {
-        QueryManager queryManager = new QueryManager(query, streamTableDefinitionMap, streamJunctionMap, eventTableMap, siddhiContext);
+        QueryManager queryManager = new QueryManager(query, streamAndTableDefinitionMap, streamJunctionMap, eventTableMap, siddhiContext);
         OutputCallback outputCallback = queryManager.getOutputCallback();
         if (outputCallback != null && outputCallback instanceof InsertIntoStreamCallback) {
             defineStream(((InsertIntoStreamCallback) outputCallback).getOutputStreamDefinition());
         }
-        queryProcessorMap.put(queryManager.getQueryId(), queryManager);
+        queryManagerMap.put(queryManager.getQueryId(), queryManager);
         return queryManager.getQueryId();
 
     }
@@ -317,9 +295,9 @@ public class SiddhiManager {
     }
 
     public void removeQuery(String queryId) {
-        QueryManager queryManager = queryProcessorMap.remove(queryId);
+        QueryManager queryManager = queryManagerMap.remove(queryId);
         if (queryManager != null) {
-            queryManager.removeQuery(streamJunctionMap, streamTableDefinitionMap);
+            queryManager.removeQuery(streamJunctionMap, streamAndTableDefinitionMap);
         }
     }
 
@@ -327,7 +305,7 @@ public class SiddhiManager {
 //    private Map<String, StreamDefinition> getQueryStreamDefinitionMap(List<String> streamIds) {
 //        Map<String, StreamDefinition> map = new HashMap<String, StreamDefinition>();
 //        for (String streamId : streamIds) {
-//            map.put(streamId, streamTableDefinitionMap.get(streamId));
+//            map.put(streamId, streamAndTableDefinitionMap.get(streamId));
 //        }
 //        return map;
 //    }
@@ -339,7 +317,7 @@ public class SiddhiManager {
 //    }
 
     public Query getQuery(String queryReference) {
-        return queryProcessorMap.get(queryReference).getQuery();
+        return queryManagerMap.get(queryReference).getQuery();
     }
 
     public InputHandler getInputHandler(String streamId) {
@@ -359,7 +337,7 @@ public class SiddhiManager {
     }
 
     public void addCallback(String queryReference, QueryCallback callback) {
-        QueryManager queryManager = queryProcessorMap.get(queryReference);
+        QueryManager queryManager = queryManagerMap.get(queryReference);
         if (queryManager == null) {
             throw new QueryNotExistException("No query fund for " + queryReference);
         }
@@ -388,7 +366,7 @@ public class SiddhiManager {
     }
 
     public StreamDefinition getStreamDefinition(String streamId) {
-        AbstractDefinition abstractDefinition = streamTableDefinitionMap.get(streamId);
+        AbstractDefinition abstractDefinition = streamAndTableDefinitionMap.get(streamId);
         if (abstractDefinition instanceof StreamDefinition) {
             return (StreamDefinition) abstractDefinition;
         } else {
@@ -397,8 +375,8 @@ public class SiddhiManager {
     }
 
     public List<StreamDefinition> getStreamDefinitions() {
-        List<StreamDefinition> streamDefinitions = new ArrayList<StreamDefinition>(streamTableDefinitionMap.size());
-        for (AbstractDefinition abstractDefinition : streamTableDefinitionMap.values()) {
+        List<StreamDefinition> streamDefinitions = new ArrayList<StreamDefinition>(streamAndTableDefinitionMap.size());
+        for (AbstractDefinition abstractDefinition : streamAndTableDefinitionMap.values()) {
             if (abstractDefinition instanceof StreamDefinition) {
                 streamDefinitions.add((StreamDefinition) abstractDefinition);
             }

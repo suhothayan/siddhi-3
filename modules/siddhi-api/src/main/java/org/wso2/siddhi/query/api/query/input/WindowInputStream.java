@@ -23,6 +23,7 @@ import org.wso2.siddhi.query.api.query.input.handler.Filter;
 import org.wso2.siddhi.query.api.query.input.handler.StreamFunction;
 import org.wso2.siddhi.query.api.query.input.handler.StreamHandler;
 import org.wso2.siddhi.query.api.query.input.handler.Window;
+import org.wso2.siddhi.query.api.utils.StreamUsage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +78,13 @@ public class WindowInputStream implements SingleInputStream {
         streamIds.add(streamId);
         return streamIds;
     }
+
+    public List<StreamUsage> getStreamUsages() {
+        List<StreamUsage> streamUsages = new ArrayList<StreamUsage>();
+        streamUsages.add(new StreamUsage(streamId));
+        return streamUsages;
+    }
+
 
     public WindowInputStream as(String streamReferenceId) {
         this.streamReferenceId = streamReferenceId;

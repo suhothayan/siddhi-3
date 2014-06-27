@@ -14,21 +14,31 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.siddhi.query.api.condition;
+package org.wso2.siddhi.query.api.query.output.stream;
 
-import java.util.Map;
-import java.util.Set;
+public abstract class OutputStream {
 
-public class ConditionValidator {
+    protected OutputEventsFor outputEventsFor;
 
-//    public static void validate(Condition condition, List<QueryEventSource> queryEventSources,
-//                                ConcurrentMap<String, AbstractDefinition> streamTableDefinitionMap, String streamReferenceId, boolean processInStreamDefinition) {
-//        condition.validate(queryEventSources,streamTableDefinitionMap, streamReferenceId, processInStreamDefinition);
-//    }
-
-    public static Map<String, Set<String>> getDependency(Condition condition) {
-        return condition.getDependency();
+    public enum OutputEventsFor {
+        EXPIRED_EVENTS, CURRENT_EVENTS, ALL_EVENTS
     }
 
+    protected String streamId;
 
+    public String getStreamId() {
+        return streamId;
+    }
+
+    public void setStreamId(String streamId) {
+        this.streamId = streamId;
+    }
+
+    public OutputEventsFor getOutputEventsFor() {
+        return outputEventsFor;
+    }
+
+    public void setOutputEventsFor(OutputEventsFor outputEventsFor) {
+        this.outputEventsFor = outputEventsFor;
+    }
 }

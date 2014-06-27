@@ -27,7 +27,7 @@ public class SequenceQueryTestCase {
 
 //    from e1=Stream1[price >= 20] , e2=Stream2[ price >= e1.price]
 //    select e1.symbol, avg(e2.price ) as avgPrice
-//    insert into OutStream
+//    insert into OutputStream
 //    group by e1.symbol
 //    having avgPrice>50;
 
@@ -40,7 +40,7 @@ public class SequenceQueryTestCase {
                                 QueryFactory.inputStream("e2", "Stream1")),
                         Expression.value(2000)
                 ));
-        query.insertInto("OutStream");
+        query.insertInto("OutputStream");
         query.select(
                 QueryFactory.outputSelector().
                         select("symbol", Expression.variable("e1", "symbol")).
