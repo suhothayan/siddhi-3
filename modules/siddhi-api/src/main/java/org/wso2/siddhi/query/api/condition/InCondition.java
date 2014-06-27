@@ -16,15 +16,8 @@
  */
 package org.wso2.siddhi.query.api.condition;
 
-import org.wso2.siddhi.query.api.definition.AbstractDefinition;
-import org.wso2.siddhi.query.api.definition.TableDefinition;
-import org.wso2.siddhi.query.api.exception.SourceNotExistException;
-import org.wso2.siddhi.query.api.query.QueryEventSource;
-
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 
 public class InCondition extends Condition {
 
