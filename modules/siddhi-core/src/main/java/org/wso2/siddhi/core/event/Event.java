@@ -24,18 +24,12 @@ import java.util.Arrays;
 
 public abstract class Event implements StreamEvent, AtomicEvent {
 
-    private String streamId;
     private long timeStamp;
     private Object[] data;
 
-    public Event(String streamId, long timeStamp, Object[] data) {
-        this.streamId = streamId;
+    public Event( long timeStamp, Object[] data) {
         this.timeStamp = timeStamp;
         this.data = data;
-    }
-
-    public String getStreamId() {
-        return streamId;
     }
 
     public long getTimeStamp() {
@@ -53,8 +47,7 @@ public abstract class Event implements StreamEvent, AtomicEvent {
     @Override
     public String toString() {
         return "Event{" +
-                "streamId='" + streamId + '\'' +
-                ", timeStamp=" + timeStamp +
+                "timeStamp=" + timeStamp +
                 ", data=" + (data == null ? null : Arrays.asList(data)) +
                 ", type=" + ((this instanceof InStream) ? "new" : ((this instanceof RemoveEvent) ? "remove" : "other"))+
                 '}';
