@@ -74,19 +74,19 @@ public class ExecutionPlanManager {
 //        if (siddhiConfiguration.isDistributedProcessing()) {
 //            HazelcastInstance hazelcastInstance = Hazelcast.getHazelcastInstanceByName(siddhiConfiguration.getInstanceIdentifier());
 //            if (hazelcastInstance == null) {
-//                this.siddhiContext = new SiddhiContext(siddhiConfiguration.getQueryPlanIdentifier(), SiddhiContext.ProcessingState.ENABLE_INTERNAL);
+//                this.siddhiContext = new SiddhiContext(siddhiConfiguration.getInstanceIdentifier(), SiddhiContext.ProcessingState.ENABLE_INTERNAL);
 //                Config hazelcastConf = new Config();
 //                hazelcastConf.setProperty("hazelcast.logging.type", "log4j");
-//                hazelcastConf.getGroupConfig().setName(siddhiConfiguration.getQueryPlanIdentifier());
+//                hazelcastConf.getGroupConfig().setName(siddhiConfiguration.getInstanceIdentifier());
 //                hazelcastConf.setInstanceName(siddhiConfiguration.getInstanceIdentifier());
 //                hazelcastInstance = Hazelcast.newHazelcastInstance(hazelcastConf);
 //            } else {
-//                this.siddhiContext = new SiddhiContext(siddhiConfiguration.getQueryPlanIdentifier(), SiddhiContext.ProcessingState.ENABLE_EXTERNAL);
+//                this.siddhiContext = new SiddhiContext(siddhiConfiguration.getInstanceIdentifier(), SiddhiContext.ProcessingState.ENABLE_EXTERNAL);
 //            }
 //            siddhiContext.setHazelcastInstance(hazelcastInstance);
 //            siddhiContext.setGlobalIndexGenerator(new GlobalIndexGenerator(siddhiContext));
 //        } else {
-//            this.siddhiContext = new SiddhiContext(siddhiConfiguration.getQueryPlanIdentifier(), SiddhiContext.ProcessingState.DISABLED);
+//            this.siddhiContext = new SiddhiContext(siddhiConfiguration.getInstanceIdentifier(), SiddhiContext.ProcessingState.DISABLED);
 //        }
 //
 //        this.siddhiContext.setEventBatchSize(siddhiConfiguration.getEventBatchSize());

@@ -66,17 +66,8 @@ import java.util.concurrent.TimeUnit;
 
 public class SiddhiManager {
 
-    static final Logger log = Logger.getLogger(SiddhiManager.class);
 
     private SiddhiContext siddhiContext;
-    private ConcurrentMap<String, StreamJunction> streamJunctionMap = new ConcurrentHashMap<String, StreamJunction>(); //contains definition
-    private ConcurrentMap<String, AbstractDefinition> streamTableDefinitionMap = new ConcurrentHashMap<String, AbstractDefinition>(); //contains stream & table definition
-    private ConcurrentMap<String, QueryManager> queryProcessorMap = new ConcurrentHashMap<String, QueryManager>();
-    private ConcurrentMap<String, InputHandler> inputHandlerMap = new ConcurrentHashMap<String, InputHandler>();
-    private ConcurrentMap<String, EventTable> eventTableMap = new ConcurrentHashMap<String, EventTable>(); //contains event tables
-    private ConcurrentMap<String, PartitionDefinition> partitionDefinitionMap = new ConcurrentHashMap<String, PartitionDefinition>();
-
-//    LinkedBlockingQueue<StateEvent> inputQueue = new LinkedBlockingQueue<StateEvent>();
 
     public SiddhiManager() {
         this(new SiddhiConfiguration());
@@ -84,21 +75,7 @@ public class SiddhiManager {
 
     public SiddhiManager(SiddhiConfiguration siddhiConfiguration) {
 
-        if (siddhiConfiguration.isDistributedProcessing()) {
-            HazelcastInstance hazelcastInstance = Hazelcast.getHazelcastInstanceByName(siddhiConfiguration.getInstanceIdentifier());
-            if (hazelcastInstance == null) {
-                this.siddhiContext = new SiddhiContext(siddhiConfiguration.getQueryPlanIdentifier(), SiddhiContext.ProcessingState.ENABLE_INTERNAL);
-                Config hazelcastConf = new Config();
-                hazelcastConf.setProperty("hazelcast.logging.type", "log4j");
-                hazelcastConf.getGroupConfig().setName(siddhiConfiguration.getQueryPlanIdentifier());
-                hazelcastConf.setInstanceName(siddhiConfiguration.getInstanceIdentifier());
-                hazelcastInstance = Hazelcast.newHazelcastInstance(hazelcastConf);
-            } else {
-                this.siddhiContext = new SiddhiContext(siddhiConfiguration.getQueryPlanIdentifier(), SiddhiContext.ProcessingState.ENABLE_EXTERNAL);
-            }
-            siddhiContext.setHazelcastInstance(hazelcastInstance);
-            siddhiContext.setGlobalIndexGenerator(new GlobalIndexGenerator(siddhiContext));
-        } else {
+
             this.siddhiContext = new SiddhiContext(siddhiConfiguration.getQueryPlanIdentifier(), SiddhiContext.ProcessingState.DISABLED);
         }
 

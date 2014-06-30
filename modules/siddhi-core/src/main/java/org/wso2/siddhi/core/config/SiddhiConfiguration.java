@@ -37,12 +37,6 @@ public class SiddhiConfiguration {
      */
     private int threadSchedulerCorePoolSize;
 
-
-    /**
-     * To enable Async Processing that uses intermediate queues
-     */
-    private boolean asyncProcessing;
-
     /**
      * Number of max events bundled when event rates are high
      */
@@ -54,15 +48,8 @@ public class SiddhiConfiguration {
     private String instanceIdentifier;
 
     /**
-     * To enable Hazelcast based distributed processing
+     * Extensions of Siddhi
      */
-    private boolean distributedProcessing;
-
-    /**
-     * Query plan and Hazelcast Cluster Identifier
-     */
-    private String queryPlanIdentifier;
-
     private List<Class> siddhiExtensions;
 
     public SiddhiConfiguration() {
@@ -73,15 +60,10 @@ public class SiddhiConfiguration {
 
         threadSchedulerCorePoolSize = 20;
 
-        asyncProcessing = false;
-
-        distributedProcessing = false;
-
         eventBatchSize = 50;
 
         instanceIdentifier = UUID.randomUUID().toString();
 
-        queryPlanIdentifier = UUID.randomUUID().toString();
     }
 
     public int getThreadExecutorCorePoolSize() {
@@ -111,15 +93,6 @@ public class SiddhiConfiguration {
         return this;
     }
 
-    public boolean isAsyncProcessing() {
-        return asyncProcessing;
-    }
-
-    public SiddhiConfiguration setAsyncProcessing(boolean asyncProcessing) {
-        this.asyncProcessing = asyncProcessing;
-        return this;
-    }
-
     public int getEventBatchSize() {
         return eventBatchSize;
     }
@@ -136,24 +109,6 @@ public class SiddhiConfiguration {
     public SiddhiConfiguration setInstanceIdentifier(String instanceIdentifier) {
         this.instanceIdentifier = instanceIdentifier;
         return this;
-    }
-
-    public boolean isDistributedProcessing() {
-        return distributedProcessing;
-    }
-
-    public SiddhiConfiguration setDistributedProcessing(boolean distributedProcessing) {
-        this.distributedProcessing = distributedProcessing;
-        return this;
-    }
-
-    public SiddhiConfiguration setQueryPlanIdentifier(String queryPlanIdentifier) {
-        this.queryPlanIdentifier = queryPlanIdentifier;
-        return this;
-    }
-
-    public String getQueryPlanIdentifier() {
-        return queryPlanIdentifier;
     }
 
     public List<Class> getSiddhiExtensions() {

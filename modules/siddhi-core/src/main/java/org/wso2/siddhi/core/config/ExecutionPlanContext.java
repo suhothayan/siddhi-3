@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class SiddhiContext {
+public class ExecutionPlanContext {
 
     private int eventBatchSize;
     private SnapshotService snapshotService;
@@ -52,7 +52,7 @@ public class SiddhiContext {
 
     public enum ProcessingState {ENABLE_INTERNAL,ENABLE_EXTERNAL,DISABLED}
 
-    public SiddhiContext(String instanceIdentifier) {
+    public ExecutionPlanContext(String instanceIdentifier) {
         this.instanceIdentifier = instanceIdentifier;
         this.elementIdGenerator = new ElementIdGenerator(instanceIdentifier);
         this.siddhiDataSources = new ConcurrentHashMap<String, DataSource>();

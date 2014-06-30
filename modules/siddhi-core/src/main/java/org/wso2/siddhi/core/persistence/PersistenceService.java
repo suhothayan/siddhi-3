@@ -21,9 +21,6 @@ import org.apache.log4j.Logger;
 import org.wso2.siddhi.core.config.SiddhiContext;
 import org.wso2.siddhi.core.exception.NoPersistenceStoreAssignedException;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class PersistenceService {
 
     static final Logger log = Logger.getLogger(PersistenceService.class);
@@ -33,7 +30,7 @@ public class PersistenceService {
 
     public PersistenceService(
             SiddhiContext siddhiContext) {
-        this.queryPlanIdentifier = siddhiContext.getQueryPlanIdentifier();
+        this.queryPlanIdentifier = siddhiContext.getInstanceIdentifier();
         this.siddhiContext = siddhiContext;
     }
 
